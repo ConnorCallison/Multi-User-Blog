@@ -18,6 +18,9 @@ handlers:
 - url: /logout
   script: main.app
 
+- url: /post
+  script: main.app
+
 - url: /css
   mime_type: text/css
   static_dir: templates/css

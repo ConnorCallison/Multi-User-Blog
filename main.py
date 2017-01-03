@@ -169,11 +169,20 @@ class User(db.Model):
 		if u and valid_pw(name, pw, u.pw_hash):
 			return u
 
+class Post(db.Model):
+	username = db.StringProperty(required = True)
+	created = db.DateTimeProperty(auto_now_add = True)
+	title = db.StringProperty(required = True)
+	post_content = db.StringProperty(required = True)
+
+	def render(self):
+		posts = greetings = Post.all().order('-created')
+		self.render('index.html', posts = posts)
 
 class MainPage(BaseHandler):
 	def get(self):
 		self.response.headers['Content-Type'] = 'text/html'
-		self.render("index.html")
+		self.render("index.html", posts = Post.all().order('-created'))
 
 class LoginPage(BaseHandler):
 	def get(self):
@@ -191,10 +200,37 @@ class LoginPage(BaseHandler):
 			msg = 'Invalid username / password combination.'
 			self.render('login.html', error = msg)
 
+def blog_key(name = 'default'):
+	return db.Key.from_path('blogs', name)
+
+class PostPage(BaseHandler):
+	def get(self):
+		if self.user:
+			self.render("new-post.html")
+			u = self.user
+		else:
+			self.redirect("/login")
+
+	def post(self):
+		if not self.user:
+			self.redirect('/')
+
+		title = self.request.get('title')
+		content = self.request.get('content')
+
+		if title and content:
+			p = Post(parent = blog_key(), title = title, post_content = content, username = self.user.name)
+			p.put()
+			self.redirect('/%s' % str(p.key().id()))
+		else:
+			error = "Please fill in all fields."
+			self.render("new-post.html", title=title, content=content, error=error)
+
+
 class LogoutHandler(BaseHandler):
-    def get(self):
-        self.logout()
-        self.redirect('/')
+	def get(self):
+		self.logout()
+		self.redirect('/')
 
 class WelcomePage(BaseHandler):
 	def get(self):
@@ -222,5 +258,6 @@ app = webapp2.WSGIApplication([
 	('/register', RegisterPage),
 	('/login', LoginPage),
 	('/logout', LogoutHandler),
+	('/post', PostPage),
 	('/welcome', WelcomePage)
 ], debug=True)
