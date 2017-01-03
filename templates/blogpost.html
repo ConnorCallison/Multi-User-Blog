@@ -9,7 +9,7 @@
 	<meta name="description" content="">
 	<meta name="author" content="">
 
-	<title>Connor's Blog</title>
+	<title>{{post.title}}</title>
 
 	<!-- Bootstrap Core CSS -->
 	<link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -75,16 +75,13 @@
 
 	<!-- Page Header -->
 	<!-- Set your background image for this header on the line below. -->
-	<header class="intro-header" style="background-image: url('img/home-bg.jpg')">
+	<header class="intro-header" style="background-image: url('img/about-bg.jpg')">
 		<div class="container">
 			<div class="row">
 				<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-					<div class="site-heading">
-						<h1>Connor's Blog</h1>
-						<hr class="small">
-						<span class="subheading">
-						A Google App Engine Application
-						</span>
+					<div class="page-heading">
+						<h1>{{ post.title }}</h1>
+						<h4>{{ post.username }} | {{ post.created.date() }}</h4>
 					</div>
 				</div>
 			</div>
@@ -95,20 +92,7 @@
 	<div class="container">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-			{% for post in posts %}
-				<div class="post-preview">
-					<a href="/view?post_id={{post.key()}}">
-						<h2 class="post-title">
-							{{post.title}}
-						</h2>
-						<h3 class="post-subtitle">
-							{{post.post_content}}
-						</h3>
-					</a>
-					<p class="post-meta">Posted by <a href="#">{{post.username}}</a> on {{post.created.date()}} </p>
-				</div>
-				<hr>
-			{% endfor %}
+				{{ post.post_content }}
 			</div>
 		</div>
 	</div>

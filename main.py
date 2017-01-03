@@ -175,6 +175,10 @@ class Post(db.Model):
 	title = db.StringProperty(required = True)
 	post_content = db.StringProperty(required = True)
 
+	@classmethod
+	def by_id(cls, pid):
+		return Post.get_by_id(pid, parent = blog_key())
+
 	def render(self):
 		posts = greetings = Post.all().order('-created')
 		self.render('index.html', posts = posts)
@@ -203,7 +207,7 @@ class LoginPage(BaseHandler):
 def blog_key(name = 'default'):
 	return db.Key.from_path('blogs', name)
 
-class PostPage(BaseHandler):
+class SubmitPostPage(BaseHandler):
 	def get(self):
 		if self.user:
 			self.render("new-post.html")
@@ -226,6 +230,11 @@ class PostPage(BaseHandler):
 			error = "Please fill in all fields."
 			self.render("new-post.html", title=title, content=content, error=error)
 
+class PostPage(BaseHandler):
+	def get(self):
+		post_id = self.request.get('post_id')
+		if post_id:
+			self.render("blogpost.html", post = db.get(post_id))
 
 class LogoutHandler(BaseHandler):
 	def get(self):
@@ -240,24 +249,12 @@ class WelcomePage(BaseHandler):
 		else:
 			self.redirect('/register')
 
-class MenuMaker(BaseHandler):
-	def make_menu():
-		self.menu_items ={'Home':'/'}
-		if self.user.name:
-			menu_items['Post'] = '/post'
-			menu_items['Logout'] = '/logout'
-		else:
-			menu_items['Register'] = '/register'
-			menu_items['login'] = '/login'
-
-		return eslf.menu_items
-
-
 app = webapp2.WSGIApplication([
 	('/', MainPage),
 	('/register', RegisterPage),
 	('/login', LoginPage),
 	('/logout', LogoutHandler),
-	('/post', PostPage),
+	('/post', SubmitPostPage),
+	('/view', PostPage),
 	('/welcome', WelcomePage)
 ], debug=True)

@@ -15,6 +15,9 @@ handlers:
 - url: /welcome
   script: main.app
 
+- url: /view
+  script: main.app
+
 - url: /logout
   script: main.app
 
