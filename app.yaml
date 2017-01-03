@@ -6,6 +6,12 @@ handlers:
 - url: /
   script: main.app
 
+- url: /register
+  script: main.app
+
+- url: /welcome
+  script: main.app
+
 - url: /css
   mime_type: text/css
   static_dir: templates/css
