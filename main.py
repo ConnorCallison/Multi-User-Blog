@@ -22,13 +22,17 @@ def check_secure_val(secure_val):
 	if secure_val == make_secure_val(val):
 		return val
 
+def render_str(template, **params):
+	t = jinja_env.get_template(template)
+	return t.render(params)
+
 class BaseHandler(webapp2.RequestHandler):
 	def write(self,*a,**kw):
 		self.response.out.write(*a,**kw)
 
 	def render_str(self, template, **params):
-		t = jinja_env.get_template(template)
-		return t.render(params)
+		params['user'] = self.user
+		return render_str(template, **params)
 
 	def render(self, template, **kw):
 		self.write(self.render_str(template,**kw))
@@ -187,6 +191,11 @@ class LoginPage(BaseHandler):
 			msg = 'Invalid username / password combination.'
 			self.render('login.html', error = msg)
 
+class LogoutHandler(BaseHandler):
+    def get(self):
+        self.logout()
+        self.redirect('/')
+
 class WelcomePage(BaseHandler):
 	def get(self):
 		self.response.headers['Content-Type'] = 'text/html'
@@ -195,9 +204,23 @@ class WelcomePage(BaseHandler):
 		else:
 			self.redirect('/register')
 
+class MenuMaker(BaseHandler):
+	def make_menu():
+		self.menu_items ={'Home':'/'}
+		if self.user.name:
+			menu_items['Post'] = '/post'
+			menu_items['Logout'] = '/logout'
+		else:
+			menu_items['Register'] = '/register'
+			menu_items['login'] = '/login'
+
+		return eslf.menu_items
+
+
 app = webapp2.WSGIApplication([
 	('/', MainPage),
 	('/register', RegisterPage),
 	('/login', LoginPage),
+	('/logout', LogoutHandler),
 	('/welcome', WelcomePage)
 ], debug=True)
