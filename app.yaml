@@ -1,0 +1,39 @@
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /
+  script: main.app
+
+- url: /css
+  mime_type: text/css
+  static_dir: templates/css
+
+- url: /js
+  mime_type: text/javascript
+  static_dir: templates/js
+
+- url: /vendor/jquery
+  mime_type: text/javascript
+  static_dir: templates/vendor/jquery
+
+- url: /vendor/bootstrap/js
+  mime_type: text/javascript
+  static_dir: templates/vendor/bootstrap/js
+
+- url: /vendor/bootstrap/css
+  mime_type: text/css
+  static_dir: templates/vendor/bootstrap/css
+
+- url: /vendor/font-awesome/css
+  mime_type: text/css
+  static_dir: templates/vendor/font-awesome/css
+
+- url: /img
+  mime_type: image/jpeg
+  static_dir: templates/img
+
+libraries:
+- name: jinja2
+  version: latest
