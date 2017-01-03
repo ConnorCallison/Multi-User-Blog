@@ -78,34 +78,33 @@
 					<!-- Main Content -->
 					<div class="container">
 						<div class="row">
-							<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-								<form name="loginForm" method="post" novalidate>
-									<div class="row control-group">
-										<div class="form-group col-xs-12 floating-label-form-group controls login">
-											<label>Username</label>
-											<input type="text" class="form-control" placeholder="Username" name="username" required data-validation-required-message="Please enter your Username." value="{{username}}">
-											<p class="help-block text-danger error">
-												{{error_username}}
-											</p>
+							<div class="container">
+								<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+									<form name="loginForm" method="post" novalidate>
+										<p class="alert-warning">
+											{{error}}
+										</p>
+										<div class="row control-group">
+											<div class="form-group col-xs-12 floating-label-form-group controls login">
+												<label>Username</label>
+												<input type="text" class="form-control" placeholder="Username" name="username" required data-validation-required-message="Please enter your Username." value="{{username}}">
+											</div>
 										</div>
-									</div>
-									<hr class="thin">
-									<div class="row control-group">
-										<div class="form-group col-xs-12 floating-label-form-group controls login">
-											<label>Password</label>
-											<input type="Password" class="form-control" placeholder="Password" name="password" required data-validation-required-message="Please enter your password">
-											<p class="help-block text-danger">
-												{{error_password}}
-											</p>
+										<hr class="thin">
+										<div class="row control-group">
+											<div class="form-group col-xs-12 floating-label-form-group controls login">
+												<label>Password</label>
+												<input type="Password" class="form-control" placeholder="Password" name="password" required data-validation-required-message="Please enter your password">
+											</div>
 										</div>
-									</div>
-									<br>
-									<div class="row">
-										<div class="form-group col-xs-12">
-											<button type="submit" class="btn btn-default">Register</button>
+										<br>
+										<div class="row">
+											<div class="form-group col-xs-12">
+												<button type="submit" class="btn btn-default">Login</button>
+											</div>
 										</div>
-									</div>
-								</form>
+									</form>
+								</div>
 							</div>
 						</div>
 					</div>

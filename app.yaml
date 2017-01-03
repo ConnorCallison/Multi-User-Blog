@@ -9,6 +9,9 @@ handlers:
 - url: /register
   script: main.app
 
+- url: /login
+  script: main.app
+
 - url: /welcome
   script: main.app
 

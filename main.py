@@ -171,9 +171,9 @@ class MainPage(BaseHandler):
 		self.response.headers['Content-Type'] = 'text/html'
 		self.render("index.html")
 
-class Login(BlogHandler):
+class LoginPage(BaseHandler):
 	def get(self):
-		self.render('login-form.html')
+		self.render('login.html')
 
 	def post(self):
 		username = self.request.get('username')
@@ -184,7 +184,7 @@ class Login(BlogHandler):
 			self.login(u)
 			self.redirect('/')
 		else:
-			msg = 'Invalid login'
+			msg = 'Invalid username / password combination.'
 			self.render('login.html', error = msg)
 
 class WelcomePage(BaseHandler):
@@ -198,5 +198,6 @@ class WelcomePage(BaseHandler):
 app = webapp2.WSGIApplication([
 	('/', MainPage),
 	('/register', RegisterPage),
+	('/login', LoginPage),
 	('/welcome', WelcomePage)
 ], debug=True)
