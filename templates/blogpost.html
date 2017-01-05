@@ -89,7 +89,7 @@
 
 	<!-- Page Header -->
 	<!-- Set your background image for this header on the line below. -->
-	<header class="intro-header" style="background-image: url('img/about-bg.png')">
+	<header class="intro-header" style="background-image: url('img/about-bg.jpg')">
 		<div class="container">
 			<div class="row">
 				<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
@@ -147,14 +147,34 @@
 			</div>
 		</div>
 		<!-- Trigger the add comment modal with a button -->
-		<div class="row">
-			<div class="col-lg-8">
-			<hr class="small">
-				<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#add-comment-modal">Add Comment</button>
+		{% if user %}
+			<div class="row">
+				<div class="col-lg-2">
+				<hr class="small">
+					<button type="button" class="btn btn-info btn-md" data-toggle="modal" data-target="#add-comment-modal">Add Comment</button>
+				</div>
+				{% if post.username|string() != user.name|string() %}
+					<div class="col-lg-1">
+					<hr class="small">
+						<form method="post">
+							<input type="hidden" name="action" value="like-click">
+							{% if user.name|string() in post.likers %}
+								<button type="submit" class="btn btn-info btn-md" name="username" value="{{user.name}}">
+									<span class="glyphicon glyphicon-thumbs-down"></span>
+									{{post.likes}}
+								</button>
+							{% else %}
+								<button type="submit" class="btn btn-info btn-md" name="username" value="{{user.name}}">
+									<span class="glyphicon glyphicon-thumbs-up"></span>
+									{{post.likes}}
+								</button>
+							{% endif %}
+						</form>
+					</div>
+				{% endif %}
 			</div>
-		</div>
+		{% endif %}
 	</div>
-
 	<hr>
 	<!-- Add Comment Modal -->
 	<div class="container-fluid">

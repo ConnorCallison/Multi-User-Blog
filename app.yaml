@@ -51,6 +51,10 @@ handlers:
   mime_type: text/css
   static_dir: templates/vendor/font-awesome/css
 
+- url: /vendor/font-awesome/fonts
+  mime_type: text/css
+  static_dir: templates/vendor/font-awesome/fonts
+
 - url: /img
   mime_type: image/jpeg
   static_dir: templates/img
