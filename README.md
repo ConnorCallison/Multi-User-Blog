@@ -2,7 +2,7 @@ Welcome to my multi-user-blog project!
 ===================
 
 
-This project uses the Google App Engine Python API to create a blog that users can register and post on.
+This project uses the Google App Engine Python SDK to create a blog that users can register and post on.
 
 ----------
 
