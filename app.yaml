@@ -44,6 +44,9 @@ handlers:
   mime_type: text/css
   static_dir: templates/vendor/bootstrap/css
 
+- url: /vendor/bootstrap/fonts/
+  static_dir: templates/vendor/bootstrap/fonts
+
 - url: /vendor/font-awesome/css
   mime_type: text/css
   static_dir: templates/vendor/font-awesome/css

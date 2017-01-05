@@ -14,13 +14,11 @@ jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 
 secret = "29ae45de319049aebb7f2c40dc27d83fc37d0a1d"
 
-def make_secure_val(val):
-	return '%s|%s' % (val, hmac.new(secret, val).hexdigest())
-
-def check_secure_val(secure_val):
-	val = secure_val.split('|')[0]
-	if secure_val == make_secure_val(val):
-		return val
+"""
+-----------------------------------------------
+	Base handler for following pages to use
+-----------------------------------------------
+"""
 
 def render_str(template, **params):
 	t = jinja_env.get_template(template)
@@ -60,9 +58,17 @@ class BaseHandler(webapp2.RequestHandler):
 
 """
 -----------------------------------------------
-			USER AUTHENTICATION
+	User Authentication
 -----------------------------------------------
 """
+
+def make_secure_val(val):
+	return '%s|%s' % (val, hmac.new(secret, val).hexdigest())
+
+def check_secure_val(secure_val):
+	val = secure_val.split('|')[0]
+	if secure_val == make_secure_val(val):
+		return val
 
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 def valid_username(username):
@@ -88,6 +94,92 @@ def make_pw_hash(name, pw, salt = None):
 def valid_pw(name, password, h):
 	salt = h.split(',')[0]
 	return h == make_pw_hash(name, password, salt)
+
+"""
+-----------------------------------------------
+	Blog Items
+-----------------------------------------------
+"""
+def blog_key(name = 'default'):
+	return db.Key.from_path('blogs', name)
+
+def users_key(group = 'default'):
+	return db.Key.from_path('users', group)
+
+class User(db.Model):
+	name = db.StringProperty(required = True)
+	pw_hash = db.StringProperty(required = True)
+	email = db.StringProperty()
+
+	@classmethod
+	def by_id(cls, uid):
+		return User.get_by_id(uid, parent = users_key())
+
+	@classmethod
+	def by_name(cls, name):
+		u = User.all().filter('name =', name).get()
+		return u
+
+	@classmethod
+	def register(cls, name, pw, email = None):
+		pw_hash = make_pw_hash(name, pw)
+		return User(parent = users_key(),
+					name = name,
+					pw_hash = pw_hash,
+					email = email)
+
+	@classmethod
+	def login(cls, name, pw):
+		u = cls.by_name(name)
+		if u and valid_pw(name, pw, u.pw_hash):
+			return u
+
+class Post(db.Model):
+	username = db.StringProperty(required = True)
+	created = db.DateTimeProperty(auto_now_add = True)
+	title = db.StringProperty(required = True)
+	post_content = db.StringProperty(required = True, multiline=True)
+
+	@classmethod
+	def by_id(cls, pid):
+		return Post.get_by_id(pid, parent = blog_key())
+
+	def render(self):
+		posts = greetings = Post.all().order('-created')
+		self.render('index.html', posts = posts)
+
+class Comment(db.Model):
+	username = db.StringProperty(required = True)
+	post_id = db.StringProperty(required = True)
+	comment_text = db.StringProperty(required = True, multiline=True)
+	created = db.DateTimeProperty(auto_now_add = True)
+
+"""
+-----------------------------------------------
+	Pages
+-----------------------------------------------
+"""
+
+class MainPage(BaseHandler):
+	def get(self):
+		self.response.headers['Content-Type'] = 'text/html'
+		self.render("index.html", posts = Post.all().order('-created'))
+
+class LoginPage(BaseHandler):
+	def get(self):
+		self.render('login.html')
+
+	def post(self):
+		username = self.request.get('username')
+		password = self.request.get('password')
+
+		u = User.login(username, password)
+		if u:
+			self.login(u)
+			self.redirect('/')
+		else:
+			msg = 'Invalid username / password combination.'
+			self.render('login.html', error = msg)
 
 class RegisterPage(BaseHandler):
 	def get(self):
@@ -138,75 +230,6 @@ class RegisterPage(BaseHandler):
 			self.login(u)
 			self.redirect('/welcome')
 
-def users_key(group = 'default'):
-	return db.Key.from_path('users', group)
-
-class User(db.Model):
-	name = db.StringProperty(required = True)
-	pw_hash = db.StringProperty(required = True)
-	email = db.StringProperty()
-
-	@classmethod
-	def by_id(cls, uid):
-		return User.get_by_id(uid, parent = users_key())
-
-	@classmethod
-	def by_name(cls, name):
-		u = User.all().filter('name =', name).get()
-		return u
-
-	@classmethod
-	def register(cls, name, pw, email = None):
-		pw_hash = make_pw_hash(name, pw)
-		return User(parent = users_key(),
-					name = name,
-					pw_hash = pw_hash,
-					email = email)
-
-	@classmethod
-	def login(cls, name, pw):
-		u = cls.by_name(name)
-		if u and valid_pw(name, pw, u.pw_hash):
-			return u
-
-class Post(db.Model):
-	username = db.StringProperty(required = True)
-	created = db.DateTimeProperty(auto_now_add = True)
-	title = db.StringProperty(required = True)
-	post_content = db.StringProperty(required = True)
-
-	@classmethod
-	def by_id(cls, pid):
-		return Post.get_by_id(pid, parent = blog_key())
-
-	def render(self):
-		posts = greetings = Post.all().order('-created')
-		self.render('index.html', posts = posts)
-
-class MainPage(BaseHandler):
-	def get(self):
-		self.response.headers['Content-Type'] = 'text/html'
-		self.render("index.html", posts = Post.all().order('-created'))
-
-class LoginPage(BaseHandler):
-	def get(self):
-		self.render('login.html')
-
-	def post(self):
-		username = self.request.get('username')
-		password = self.request.get('password')
-
-		u = User.login(username, password)
-		if u:
-			self.login(u)
-			self.redirect('/')
-		else:
-			msg = 'Invalid username / password combination.'
-			self.render('login.html', error = msg)
-
-def blog_key(name = 'default'):
-	return db.Key.from_path('blogs', name)
-
 class SubmitPostPage(BaseHandler):
 	def get(self):
 		if self.user:
@@ -225,16 +248,97 @@ class SubmitPostPage(BaseHandler):
 		if title and content:
 			p = Post(parent = blog_key(), title = title, post_content = content, username = self.user.name)
 			p.put()
-			self.redirect('/%s' % str(p.key().id()))
+			self.redirect('/view?post_id=%s' % str(p.key()))
 		else:
 			error = "Please fill in all fields."
 			self.render("new-post.html", title=title, content=content, error=error)
 
 class PostPage(BaseHandler):
+
+	def getComments(self, post_id):
+		c = Comment.all()
+		c.filter('post_id =', post_id)
+		if c:
+			return c
+
 	def get(self):
 		post_id = self.request.get('post_id')
 		if post_id:
-			self.render("blogpost.html", post = db.get(post_id))
+			self.render("blogpost.html", post = db.get(post_id), comments = self.getComments(post_id))
+
+	def post(self):
+		if not self.user:
+			self.redirect('/')
+
+		post_id = self.request.get('post_id')
+		post = db.get(post_id)
+		action = self.request.get('action')
+
+		def editPost(self):
+			post = db.get(post_id)
+			if str(post.username) == (self.user.name):
+				post.title = self.request.get('edited-title')
+				post.post_content = self.request.get('edited-content')
+				post.put()
+				self.render("blogpost.html", post = post, comments = self.getComments(post_id))
+			else:
+				self.render("blogpost.html", post = db.get(post_id), comments = self.getComments(post_id), error = "You do not have permissino to edit this post.")
+
+		def deletePost(self):
+			post = db.get(post_id)
+			if str(post.username) == str(self.user.name):
+				post = db.get(post_id)
+				post.delete()
+				for comment in self.getComments(post_id):
+					comment.delete()
+				self.render("index.html", message = "Post Successfully Deleted")
+			else:
+				self.render("blogpost.html", post = db.get(post_id), comments = self.getComments(post_id), error = "You do not have permission to delete this post.")
+
+		def deleteComment(self):
+			comment = db.get(self.request.get('comment_id'))
+			if str(comment.username) == str(self.user.name):
+				comment.delete()
+				self.render("blogpost.html", post = db.get(post_id), comments = self.getComments(post_id))
+			else:
+				self.render("blogpost.html", post = db.get(post_id), comments = self.getComments(post_id), error = "You do not have permission to delete this comment.")
+
+
+		def commentOnPost(self):
+			username = self.user.name
+			comment_text = self.request.get('comment_text')
+
+			if username and post_id and comment_text:
+				c = Comment(parent = blog_key(), username = username, post_id = post_id, comment_text = comment_text)
+				c.put()
+				self.render("blogpost.html", post = db.get(post_id), comments = self.getComments(post_id))
+			else:
+				error = "Please try again"
+				self.render("blogpost.html", post = db.get(post_id), comments = self.getComments(post_id), error=error)
+
+		def editComment(self):
+			comment = db.get(self.request.get('comment_id'))
+			if str(comment.username) == (self.user.name):
+				comment.comment_text = self.request.get('edited-comment-text')
+				comment.put()
+				self.render("blogpost.html", post = db.get(post_id), comments = self.getComments(post_id))
+			else:
+				self.render("blogpost.html", post = db.get(post_id), comments = self.getComments(post_id), error = "You do not have permission to edit this commment.")
+
+		if action:
+			if action == 'edit-post':
+				editPost(self)
+			elif action == 'delete-post':
+				deletePost(self)
+			elif action == 'add-comment':
+				commentOnPost(self)
+			elif action == 'edit-comment':
+				editComment(self)
+			elif action == 'delete-comment':
+				deleteComment(self)
+
+
+
 
 class LogoutHandler(BaseHandler):
 	def get(self):
