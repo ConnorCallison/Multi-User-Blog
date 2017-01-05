@@ -12,12 +12,20 @@ Files
 > - **main.py** This file is the heart of the blog, it handles all of the get / post requests and interfaces with the datastore to provide content, user registration, login / logout, and  posting / commenting / liking.
 > - **/templates** each file in this folder is an HTML template for one of the pages. They are rendered in the jinja2 environment created by main.py
 
-Installation
+Installation / testing
 -------------
+**Requirements:** this project makes use of Google App Engines Pythin API. In order to run or deploy this blog one will need to run through this installation process here: https://cloud.google.com/appengine/docs/python/download
 
 > - Download / clone this repository.
 > - Navigate to te directory containing main.py
 > - run the command "dev_appserver.py ."
+
+Deployment
+-------------
+> - Once you have made all the changes to the blog that you desire, you can deploy it by running the command "gcloud deploy".
+> - This of course requires that you have set up a new application in the Google App Engine console: https://console.cloud.google.com/appengine
+
+
 
 
 
