@@ -75,22 +75,19 @@ def check_secure_val(secure_val):
     if secure_val == make_secure_val(val):
         return val
 
-USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-
 
 def valid_username(username):
+    USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
     return username and USER_RE.match(username)
-
-PASS_RE = re.compile(r"^.{3,20}$")
 
 
 def valid_password(password):
+    PASS_RE = re.compile(r"^.{3,20}$")
     return password and PASS_RE.match(password)
-
-EMAIL_RE = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
 
 
 def valid_email(email):
+    EMAIL_RE = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
     return email and EMAIL_RE.match(email)
 
 
@@ -163,9 +160,9 @@ class Post(db.Model):
     likers = []
 
     def handleLikeClick(self, username):
-        if username not in self.likers:
+        if username not in self.likers and username != self.username:
             self.likers.append(username)
-        elif username in self.likers:
+        elif username in self.likers and username != self.username:
             self.likers.remove(username)
         self.likes = self.sumLikes(self.likers)
         self.put()
@@ -285,7 +282,8 @@ class SubmitPostPage(BaseHandler):
 
     def post(self):
         if not self.user:
-            self.redirect('/')
+            self.redirect('/login')
+            return None
 
         title = self.request.get('title')
         content = self.request.get('content')
@@ -317,7 +315,8 @@ class PostPage(BaseHandler):
 
     def post(self):
         if not self.user:
-            self.redirect('/')
+            self.redirect('/login')
+            return None
 
         post_id = self.request.get('post_id')
         post = db.get(post_id)
@@ -341,31 +340,33 @@ class PostPage(BaseHandler):
 
         def deletePost(self):
             post = db.get(post_id)
-            if str(post.username) == str(self.user.name):
-                post = db.get(post_id)
-                post.delete()
-                for comment in self.getComments(post_id):
-                    comment.delete()
-                self.render("index.html", message="Post Successfully Deleted")
-            else:
-                self.render(
-                    "blogpost.html",
-                    post=db.get(post_id),
-                    comments=self.getComments(post_id),
-                    error="You do not have permission to delete this post.")
+            if post:
+                if str(post.username) == str(self.user.name):
+                    post.delete()
+                    for comment in self.getComments(post_id):
+                        comment.delete()
+                    self.render(
+                        "index.html", message="Post Successfully Deleted")
+                else:
+                    self.render(
+                        "blogpost.html",
+                        post=db.get(post_id),
+                        comments=self.getComments(post_id),
+                        error="You do not have permission to delete this post.")
 
         def deleteComment(self):
             comment = db.get(self.request.get('comment_id'))
-            if str(comment.username) == str(self.user.name):
-                comment.delete()
-                self.render("blogpost.html", post=db.get(
-                    post_id), comments=self.getComments(post_id))
-            else:
-                self.render(
-                    "blogpost.html",
-                    post=db.get(post_id),
-                    comments=self.getComments(post_id),
-                    error="You do not have permission to delete this comment.")
+            if comment:
+                if str(comment.username) == str(self.user.name):
+                    comment.delete()
+                    self.render("blogpost.html", post=db.get(
+                        post_id), comments=self.getComments(post_id))
+                else:
+                    self.render(
+                        "blogpost.html",
+                        post=db.get(post_id),
+                        comments=self.getComments(post_id),
+                        error="You do not have permission to delete this comment.")
 
         def commentOnPost(self):
             username = self.user.name
