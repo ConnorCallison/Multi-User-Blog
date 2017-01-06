@@ -22,8 +22,9 @@ Installation / testing
 
 Deployment
 -------------
-> - Once you have made all the changes to the blog that you desire, you can deploy it by running the command "gcloud deploy".
+> - Once you have made all the changes to the blog that you desire, you can deploy it by running the command "gcloud app deploy".
 > - This of course requires that you have set up a new application in the Google App Engine console: https://console.cloud.google.com/appengine
+> - Google's instructions for deploying can be found here: https://cloud.google.com/appengine/docs/python/getting-started/deploying-the-application
 
 
 
